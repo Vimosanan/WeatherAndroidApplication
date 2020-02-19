@@ -36,6 +36,8 @@ ext {
     // App dependencies
     supportLibraryVersion = '28.0.1'
     lifecycle_version = "2.2.0"
+    cardViewVersion = '1.0.0'
+    recyclerViewVersion = '1.1.0'
 
     retrofit2Version = '2.6.1'
     dagger2Version = '2.26'
