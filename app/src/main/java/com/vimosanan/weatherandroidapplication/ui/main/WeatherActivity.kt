@@ -99,9 +99,8 @@ class WeatherActivity : DaggerAppCompatActivity() {
                     }
 
                     entityResponse
-
-
                 }
+
                 Status.ERROR -> {
                     adapter.clear()
                     val message = networkResource.msg

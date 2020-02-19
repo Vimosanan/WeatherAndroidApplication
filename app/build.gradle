@@ -47,6 +47,9 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofit2Version"
     implementation "com.squareup.retrofit2:converter-gson:$rootProject.retrofit2Version"
 
+    //oKhttp
+    implementation "com.squareup.okhttp3:okhttp:$rootProject.okHttpVersion"
+
     //kotlin coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutine"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutine"
