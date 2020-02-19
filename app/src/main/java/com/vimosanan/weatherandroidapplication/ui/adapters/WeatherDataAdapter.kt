@@ -8,7 +8,7 @@ import com.vimosanan.weatherandroidapplication.R
 import com.vimosanan.weatherandroidapplication.repository.models.WeatherData
 import kotlinx.android.synthetic.main.card_view_weather_data.view.*
 
-class WeatherDataAdapter(private var weatherDataSet: List<WeatherData?>?): RecyclerView.Adapter<WeatherDataAdapter.WeatherDataViewHolder>() {
+class WeatherDataAdapter(private var weatherDataSet: MutableList<WeatherData?>?): RecyclerView.Adapter<WeatherDataAdapter.WeatherDataViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherDataViewHolder {
         var view: View = LayoutInflater.from(parent.context).inflate(R.layout.card_view_weather_data, parent, false)
@@ -20,10 +20,16 @@ class WeatherDataAdapter(private var weatherDataSet: List<WeatherData?>?): Recyc
         return weatherDataSet!!.size
     }
 
-    fun setAdapter(weatherDataSet: List<WeatherData>){
+    fun setAdapter(weatherDataSet: MutableList<WeatherData?>?){
         this.weatherDataSet = weatherDataSet
         notifyDataSetChanged()
     }
+
+    fun clear(){
+        weatherDataSet?.clear()
+        notifyDataSetChanged()
+    }
+
 
     override fun onBindViewHolder(holder: WeatherDataViewHolder, position: Int) {
         weatherDataSet?.let{
@@ -38,9 +44,19 @@ class WeatherDataAdapter(private var weatherDataSet: List<WeatherData?>?): Recyc
                            holder.itemView.txtWeather.text = description
                        }
 
-                       weather.type?.let { type ->
-                           if(type == ""){
-                               //set image accordingly
+                       weather.type?.toLowerCase().let { type ->
+                           if(type == "rain"){
+                                holder.itemView.imgWeather.setImageResource(R.drawable.rain)
+                           }else if( type == "fog") {
+                               holder.itemView.imgWeather.setImageResource(R.drawable.fog)
+                           }else if( type == "clear") {
+                               holder.itemView.imgWeather.setImageResource(R.drawable.clear)
+                           }else if( type == "clouds") {
+                               holder.itemView.imgWeather.setImageResource(R.drawable.cloudy)
+                           }else if( type == "snow") {
+                               holder.itemView.imgWeather.setImageResource(R.drawable.snow)
+                           }else{
+                               holder.itemView.imgWeather.setImageResource(R.drawable.clear) //no image for this condition, we have to design for the size and resolution
                            }
                        }
                    }

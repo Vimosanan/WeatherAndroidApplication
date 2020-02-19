@@ -1,3 +1,7 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">WeatherAndroidApplication</string>
+
+    <string name="btn.lbl.weather.search" tools:ignore="ExtraTranslation">Search</string>
+    <string name="txt.lbl.weather.title" tools:ignore="ExtraTranslation">Weather Forecast App</string>
+
 </resources>
