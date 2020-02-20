@@ -12,13 +12,22 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import com.vimosanan.weatherandroidapplication.R
-import com.vimosanan.weatherandroidapplication.repository.models.WeatherData
+import com.vimosanan.weatherandroidapplication.persistence.WeatherDataDatabase
+import com.vimosanan.weatherandroidapplication.repository.models.EntityResponse
+import com.vimosanan.weatherandroidapplication.repository.models.WeatherInternalData
 import com.vimosanan.weatherandroidapplication.ui.adapters.WeatherDataAdapter
+import com.vimosanan.weatherandroidapplication.util.NetworkStatus
 import com.vimosanan.weatherandroidapplication.util.Status
 import com.vimosanan.weatherandroidapplication.viewmodel.ViewModelProviderFactory
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.android.synthetic.main.activity_weather.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class WeatherActivity : DaggerAppCompatActivity() {
@@ -28,7 +37,7 @@ class WeatherActivity : DaggerAppCompatActivity() {
 
     private lateinit var adapter: WeatherDataAdapter
     private lateinit var viewModel: WeatherViewModel
-    private var weatherDataList: MutableList<WeatherData?>? = mutableListOf()
+    private var weatherDataList: MutableList<WeatherInternalData>? = mutableListOf()
 
 
     @SuppressLint("WrongConstant")
@@ -53,69 +62,72 @@ class WeatherActivity : DaggerAppCompatActivity() {
             if(searchQuery != ""){
                 hideKeyboard(this)
                 updateUI(searchQuery)
-
             } else {
                 txtInfo.text = "No Results Found!"
                 Toast.makeText(this, "Search any value!", Toast.LENGTH_LONG).show()
             }
         }
-    }
 
-    //update the ui with the weather data for the searched query
-    private fun updateUI(cityName: String){
-        viewModel.loadData(cityName).observe(this, Observer { networkResource ->
-            when (networkResource.status) {
-                Status.LOADING -> {
-                    txtInfo.text = "loading data from network"
-                    progressBar.visibility = View.VISIBLE
+        viewModel.infoStr.observe(this, Observer {
+            it?.let {
+                txtInfo.text = it
+            }
+        })
+
+        viewModel.weatherLiveData.observe(this, Observer {
+            if(it != null){
+                if(it.isNotEmpty()){
+                    adapter.setAdapter(it.toMutableList())
                 }
-                Status.SUCCESS -> {
-                    progressBar.visibility = View.INVISIBLE
+            }
+        })
 
-                    val entityResponse = networkResource.data
-
-                    if(entityResponse != null) {
-                        entityResponse.let {
-                            if(it.city != null) {
-                                it.city.let{ city ->
-                                    if(city!!.name != null) {
-                                        txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorBlack))
-                                        txtInfo.text = "Showing results for ${city.name}"
-                                    }
-                                }
-                            }
-
-                            if(entityResponse.count != 0 && entityResponse.data != null){
-                                txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorBlack))
-                                adapter.setAdapter(entityResponse.data!!.toMutableList())
-                            } else {
-                                txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorRed))
-                                txtInfo.text = "Something went wrong!"
-                            }
-                        }
-                    } else {
-                        txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorRed))
-                        txtInfo.text = "No Data found for your search result!"
-                    }
-
-                    entityResponse
-                }
-
-                Status.ERROR -> {
-                    adapter.clear()
-                    val message = networkResource.msg
-                    progressBar.visibility = View.INVISIBLE
-
-                    txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorRed))
-                    message?.let{
-                        txtInfo.text = it
-                    }
-                }
+        viewModel.loading.observe(this, Observer {
+            if(it){
+                progressBar.visibility = View.VISIBLE
+            } else {
+                progressBar.visibility = View.INVISIBLE
             }
         })
     }
 
+    //update the ui with the weather data for the searched query
+    private fun updateUI(cityName: String){
+        if(NetworkStatus.isNetworkConnected(this)){
+            viewModel.loadData(cityName).observe(this, Observer { networkResource ->
+                when (networkResource.status) {
+                    Status.LOADING -> {
+                        txtInfo.text = "loading data from network"
+                        progressBar.visibility = View.VISIBLE
+                    }
+                    Status.SUCCESS -> {
+                        progressBar.visibility = View.INVISIBLE
 
+                        val entityResponse = networkResource.data
+
+                        //<<<<<<<<<<SAVE TO DATABASE>>>>>>>>>>>>>>>>>\\
+                        viewModel.convertToInternalObject(entityResponse!!)
+                    }
+
+                    Status.ERROR -> {
+                        adapter.clear()
+                        val message = networkResource.msg
+                        progressBar.visibility = View.INVISIBLE
+
+                        txtInfo.setTextColor(ContextCompat.getColor(this, R.color.colorRed))
+                        message?.let{
+                            txtInfo.text = it
+                        }
+                    }
+                }
+            })
+
+        } else {
+            viewModel.getDataFromLocalDatabase(cityName) //in case there is no internet connection search in local database
+        }
+    }
+
+    //hide the input soft keyboard
     private fun hideKeyboard(activity: Activity) {
         val imm: InputMethodManager = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 

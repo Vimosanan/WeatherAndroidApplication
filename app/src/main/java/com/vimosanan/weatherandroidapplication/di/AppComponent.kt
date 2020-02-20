@@ -1,6 +1,7 @@
 package com.vimosanan.weatherandroidapplication.di
 
 import android.app.Application
+import android.content.Context
 import com.vimosanan.weatherandroidapplication.app.WeatherApplication
 import com.vimosanan.weatherandroidapplication.network.ApiInterface
 import dagger.BindsInstance
@@ -26,6 +27,7 @@ interface AppComponent: AndroidInjector<WeatherApplication> {
         fun application(application: Application): Builder
 
         fun build(): AppComponent
+
     }
 
     fun getApiInterface(): ApiInterface
