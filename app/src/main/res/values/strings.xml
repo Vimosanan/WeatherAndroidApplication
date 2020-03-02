@@ -2,6 +2,7 @@
     <string name="app_name">WeatherAndroidApplication</string>
 
     <string name="btn.lbl.weather.search" tools:ignore="ExtraTranslation">Search</string>
+    <string name="edt.lbl.weather.hint" tools:ignore="ExtraTranslation">Type here to search</string>
     <string name="txt.lbl.weather.title" tools:ignore="ExtraTranslation">Weather Forecast App</string>
 
 </resources>
