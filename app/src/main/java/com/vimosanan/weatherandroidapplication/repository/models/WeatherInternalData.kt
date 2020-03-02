@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "weather_data")
 data class WeatherInternalData (
+
     @field:PrimaryKey(autoGenerate = true)
     val id: Int?,
 
